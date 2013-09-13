@@ -12,7 +12,8 @@ import ctypes
 '''state can be "rest", "wait_work", "work"'''
 state = "rest"
 #REST_TIME = datatime.timedelta(minutes = 10)
-REST_TIME = datetime.timedelta(seconds = 5)
+REST_TIME = datetime.timedelta(seconds = 1)
+WORK_TIME = datetime.timedelta(seconds = 5)
 
 class Window(Tkinter.Frame):
     def __init__(self):
@@ -24,8 +25,6 @@ class Window(Tkinter.Frame):
         self.winfo_toplevel().overrideredirect(True)
         '''force a widget to be a certain size, regardless of the size of its contents'''
         self.grid_propagate(0)
-        self.columnconfigure(0, weight = monitor_width)
-        self.rowconfigure(0, weight = monitor_width)
         self.grid()
         
         width = self.winfo_screenwidth()
@@ -44,10 +43,21 @@ class Window(Tkinter.Frame):
         #self.canvas.pack()
         self.background.place(x = 0, y = 0, height = image_height, width = image_width)
         
-        self.time = Tkinter.Label(self, bg='white',
-                                  font = ('Times', '32'))
+        self.time = Tkinter.Label(self, bg='white', font = ('Times', '32'))
         self.time.grid(sticky = Tkinter.N)
+        '''set the width of cell 0, which place the time'''
+        self.columnconfigure(0, weight = monitor_width)
         self.tick()
+        
+        '''add a start work button'''
+        start_work = Tkinter.Button(self, text = "Start Work !", command = self.__start_work);
+        start_work.grid()
+        '''set the width and height of cell 0, which place the button'''
+        self.columnconfigure(0, weight = monitor_width)
+        self.rowconfigure(1, weight = monitor_height)
+    
+    def __start_work(self):
+        self.winfo_toplevel().withdraw()
         
     def format_timedelta(self, time_delta):
         day = str(time_delta.days)
@@ -60,14 +70,14 @@ class Window(Tkinter.Frame):
         cur_time = datetime.datetime.now()
         time_delta = cur_time - start_time
         
+        global state, REST_TIME, WORK_TIME
+        
         if state == 'rest':
             if time_delta > REST_TIME :
                 state == 'wait_work'
-                self.winfo_toplevel().overrideredirect(False)
         elif state == 'work':
             if time_delta > WORK_TIME :
                 state = 'rest'    
-                self.winfo_toplevel().overrideredirect(True) 
         
         '''show time'''
         self.time.after(1000, self.tick)
