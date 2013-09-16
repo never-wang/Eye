@@ -55,7 +55,7 @@ class Window(Tkinter.Frame):
         self.columnconfigure(0, weight = monitor_width)
         self.rowconfigure(1, weight = monitor_height)
         
-        self.set_work_state()
+        self.set_wait_work_state()
         
         self.tick()
         
@@ -66,6 +66,7 @@ class Window(Tkinter.Frame):
         
     def set_wait_work_state(self):
         self.state = 'wait_work'
+        self.start_time = datetime.datetime.now()
         self.work.grid()
         self.winfo_toplevel().deiconify()
         
