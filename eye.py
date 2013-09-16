@@ -8,6 +8,8 @@ import datetime
 import Tkinter
 from PIL import Image, ImageTk
 import ctypes
+import platform
+import gtk
 
 '''state can be "rest", "wait_work", "work"'''
 state = "wait_work"
@@ -18,8 +20,15 @@ WORK_TIME = datetime.timedelta(minutes = 50)
 
 class Window(Tkinter.Frame):
     def __init__(self):
-        monitor_width = ctypes.windll.user32.GetSystemMetrics(0)
-        monitor_height = ctypes.windll.user32.GetSystemMetrics(1)
+        if platform.system() == 'Windows':
+            monitor_width = ctypes.windll.user32.GetSystemMetrics(0)
+            monitor_height = ctypes.windll.user32.GetSystemMetrics(1)
+        elif platform.system() == 'Linux':
+            monitor_width = gtk.gdk.screen_width()
+            monitor_height = gtk.gdk.screen_height()
+        else :
+            exit
+
         Tkinter.Frame.__init__(self, width = monitor_width, height = monitor_height)
         '''removes all window manager decorations from the window'''
         self.winfo_toplevel().overrideredirect(True)
