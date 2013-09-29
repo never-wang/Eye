@@ -8,9 +8,14 @@ import datetime
 import Tkinter
 from PIL import Image, ImageTk
 import platform
-import gtk
+try:
+    import gtk
+except:
+    pass    
 import config
 import tray
+
+import ctypes
 
 CONFIG_FILENAME = 'config.ini'
 
@@ -120,14 +125,19 @@ class Window(Tkinter.Frame):
 
     def window_config(self):
         '''user config the Eye by a window, the config will be stored in config file too'''
+        print "fuck config"
         self.config_frame = Tkinter.Frame(Tkinter.Toplevel(), width = 400, height = 400)
         self.config_frame.grid()
+        
+        print "fuck config"
 
         self.config_text = Tkinter.Text(self.config_frame)
         text = self.config.text()
         if text != None:
             self.config_text.insert('0.0', text)
         self.config_text.grid()
+        
+        print "fuck config"
 
         button_frame = Tkinter.Frame(self.config_frame)
         button_frame.grid()

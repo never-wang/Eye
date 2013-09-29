@@ -18,8 +18,10 @@ class Tray():
     def __init__(self, eye):
         self.eye = eye
         if appindicator == None:
-            self.app = wx.App()
-            self.app.MainLoop()
+            self.tray = gtk.StatusIcon()
+            self.tray.set_from_file(os.path.join(os.path.dirname(__file__), "eye.gif"))
+            self.tray.set_visible(True)
+            self.tray.connect('popup-menu', self.popup_menu)
         else:
             self.tray = appindicator.Indicator('GoAgent', 'indicator-messages', appindicator.CATEGORY_APPLICATION_STATUS)
             self.tray.set_status(appindicator.STATUS_ACTIVE)
@@ -30,18 +32,19 @@ class Tray():
         self.iteration()
     
     def iteration(self):
-        if appindicator == None:
-            pass
-        else:
-            gtk.main_iteration(block = False)
-        
+        gtk.main_iteration(block = False)
         self.eye.time.after(10, self.iteration)
+    
+    def popup_menu(self, tray, button, activate_time):
+        menu = self.make_menu()
+        menu.show_all()
+        menu.popup(None, None, None, button, gtk.get_current_event_time())
             
     def make_menu(self):
-        menu = gtk.Menu()
         itemlist = [("设置", self.menu_config),
-                ('休息', self.menu_rest),
-                ('退出', self.menu_quit)]
+                    ('休息', self.menu_rest),
+                    ('退出', self.menu_quit)]
+        menu = gtk.Menu()
         for text, callback in itemlist:
             item = gtk.MenuItem(text)
             item.connect('activate', callback)
@@ -58,3 +61,6 @@ class Tray():
 
     def menu_quit(self, menuitem):
         self.eye.quit()
+
+if __name__ == "__main__":
+    Tray("test")
