@@ -3,8 +3,6 @@
 import ConfigParser
 import datetime
 import os
-import Tkinter
-import gtk
 
 class Config:
     def __init__(self, config_filename):

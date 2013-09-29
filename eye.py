@@ -5,21 +5,21 @@ Created on 2013.8.19
 '''
 
 import datetime
-import Tkinter
-from PIL import Image, ImageTk
+import wx
+#from PIL import Image, ImageTk
 import platform
 try:
     import gtk
 except:
     pass    
 import config
-import tray
+#import tray
 
 import ctypes
 
 CONFIG_FILENAME = 'config.ini'
 
-class Window(Tkinter.Frame):
+class Window(wx.Frame):
     def __init__(self):
         if platform.system() == 'Windows':
             monitor_width = ctypes.windll.user32.GetSystemMetrics(0)
@@ -32,30 +32,29 @@ class Window(Tkinter.Frame):
 
         self.config = config.Config(CONFIG_FILENAME)
         
-        Tkinter.Frame.__init__(self, width = monitor_width, height = monitor_height)
+        wx.Frame.__init__(self, None)
+        self.ShowFullScreen(True)
         '''removes all window manager decorations from the window'''
-        self.winfo_toplevel().overrideredirect(True)
         '''force a widget to be a certain size, regardless of the size of its contents'''
-        self.grid_propagate(0)
-        self.grid()
         
-        width = self.winfo_screenwidth()
-        height = self.winfo_screenheight() 
+        width = monitor_width
+        height = monitor_height 
         
-        image = Image.open(self.config.image_file())
-        image_width, image_height = image.size
+        image = wx.Image(self.config.image_file(), type = wx.BITMAP_TYPE_ANY)
+        image_width, image_height = image.GetSize()
         '''resize image'''
         ratio = max(1.0 * width / image_width, 1.0 * height / image_height)
-        image = image.resize((int(image_width * ratio), int(image_height * ratio)), Image.BILINEAR)
-        image_width, image_height = image.size
-        self.photo_image = ImageTk.PhotoImage(image)
+        image.Rescale(int(image_width * ratio), int(image_height * ratio))
+        image_width, image_height = image.GetSize()
         #Image.open('rei.jpg').show()
         #self.canvas.create_image(image_width / 2, image_height / 2 , image = self.photo_image)
-        self.background = Tkinter.Label(self, image = self.photo_image)
-        #self.canvas.pack()
-        self.background.place(x = 0, y = 0, height = image_height, width = image_width)
+        self.background = wx.StaticBitmap(self, bitmap = wx.BitmapFromImage(image), size = (image_width, image_height))
+        self.background.Show()
         
-        self.time = Tkinter.Label(self, bg='white', font = ('Times', '32'))
+        return 
+        #self.canvas.pack()
+        
+        self.time = wx.StaticText(self, bg='white', font = ('Times', '32'))
         self.time.grid(sticky = Tkinter.N)
         '''set the width of cell (0, 0), which place the time'''
         self.columnconfigure(0, weight = monitor_width)
@@ -156,6 +155,7 @@ class Window(Tkinter.Frame):
         self.config_frame.winfo_toplevel().withdraw()
 
 if __name__ == '__main__':
+    app = wx.App(False)
     window = Window()
-    window.mainloop()
+    app.MainLoop()
         
