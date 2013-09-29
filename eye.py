@@ -7,16 +7,12 @@ Created on 2013.8.19
 import datetime
 import Tkinter
 from PIL import Image, ImageTk
-import ctypes
 import platform
 import gtk
+import config
+import tray
 
-'''state can be "rest", "wait_work", "work"'''
-state = "wait_work"
-#REST_TIME = datetime.timedelta(seconds = 10)
-REST_TIME = datetime.timedelta(minutes = 10)
-WORK_TIME = datetime.timedelta(minutes = 50)
-#WORK_TIME = datetime.timedelta(seconds = 10)
+CONFIG_FILENAME = 'config.ini'
 
 class Window(Tkinter.Frame):
     def __init__(self):
@@ -29,6 +25,8 @@ class Window(Tkinter.Frame):
         else :
             exit
 
+        self.config = config.Config(CONFIG_FILENAME)
+        
         Tkinter.Frame.__init__(self, width = monitor_width, height = monitor_height)
         '''removes all window manager decorations from the window'''
         self.winfo_toplevel().overrideredirect(True)
@@ -39,7 +37,7 @@ class Window(Tkinter.Frame):
         width = self.winfo_screenwidth()
         height = self.winfo_screenheight() 
         
-        image = Image.open('rei.jpg')
+        image = Image.open(self.config.image_file())
         image_width, image_height = image.size
         '''resize image'''
         ratio = max(1.0 * width / image_width, 1.0 * height / image_height)
@@ -54,13 +52,13 @@ class Window(Tkinter.Frame):
         
         self.time = Tkinter.Label(self, bg='white', font = ('Times', '32'))
         self.time.grid(sticky = Tkinter.N)
-        '''set the width of cell 0, which place the time'''
+        '''set the width of cell (0, 0), which place the time'''
         self.columnconfigure(0, weight = monitor_width)
         
         '''add a start work button'''
-        self.work = Tkinter.Button(self, text = "Start Work !", command = self.__start_work, 
+        self.work = Tkinter.Button(self, text = "Start Work !", command = self.start_work, 
                                    font = ('Times', '30'));
-        '''set the width and height of cell 0, which place the button'''
+        '''set the width and height of cell (0, 0), which place the button'''
         self.columnconfigure(0, weight = monitor_width)
         self.rowconfigure(1, weight = monitor_height)
         
@@ -68,24 +66,32 @@ class Window(Tkinter.Frame):
         
         self.tick()
         
+        tray.Tray(self)
+
+    def time_reset(self):
+        self.time.config(text = self.format_timedelta(datetime.timedelta()))
+        
     def set_rest_state(self):     
         self.state = 'rest'
         self.start_time = datetime.datetime.now()
+        self.time_reset()
         self.winfo_toplevel().deiconify()    
         
     def set_wait_work_state(self):
         self.state = 'wait_work'
         self.start_time = datetime.datetime.now()
+        self.time_reset()
         self.work.grid()
         self.winfo_toplevel().deiconify()
         
     def set_work_state(self): 
         self.state = 'work'
         self.start_time = datetime.datetime.now()
+        self.time_reset()
         self.winfo_toplevel().withdraw()
         self.work.grid_remove()
         
-    def __start_work(self):
+    def start_work(self):
         self.set_work_state()
         
     def format_timedelta(self, time_delta):
@@ -97,23 +103,47 @@ class Window(Tkinter.Frame):
                 ":" + sec.rjust(2, '0'))
         
     def tick(self):
-        global REST_TIME, WORK_TIME
-        
         cur_time = datetime.datetime.now()
         time_delta = cur_time - self.start_time 
         
-        if self.state == 'rest':
-            if time_delta > REST_TIME :
-                self.set_wait_work_state()
-        elif self.state == 'work':
-            if time_delta > WORK_TIME : 
-                self.set_rest_state()
-        
         '''show time'''
-        self.time.after(1000, self.tick)
-        time_delta = cur_time - self.start_time
         self.time.config(text = self.format_timedelta(time_delta))
         
+        if self.state == 'rest':
+            if time_delta > self.config.rest_time() :
+                self.set_wait_work_state()
+        elif self.state == 'work':
+            if time_delta > self.config.work_time() : 
+                self.set_rest_state()
+        
+        self.time.after(1000, self.tick)
+
+    def window_config(self):
+        '''user config the Eye by a window, the config will be stored in config file too'''
+        self.config_frame = Tkinter.Frame(Tkinter.Toplevel(), width = 400, height = 400)
+        self.config_frame.grid()
+
+        self.config_text = Tkinter.Text(self.config_frame)
+        text = self.config.text()
+        if text != None:
+            self.config_text.insert('0.0', text)
+        self.config_text.grid()
+
+        button_frame = Tkinter.Frame(self.config_frame)
+        button_frame.grid()
+
+        accept_button = Tkinter.Button(button_frame, text = 'Accept', command = self.config_accept)
+        accept_button.grid(row = 1, column = 0)
+        cancel_button = Tkinter.Button(button_frame, text = 'Cancel', command = self.config_cancel)
+        cancel_button.grid(row = 1, column = 1)
+
+    def config_accept(self):
+        text = self.config_text.get('0.0', Tkinter.END)
+        self.config.set_text(text)
+        self.config_frame.winfo_toplevel().withdraw()
+
+    def config_cancel(self):
+        self.config_frame.winfo_toplevel().withdraw()
 
 if __name__ == '__main__':
     window = Window()
