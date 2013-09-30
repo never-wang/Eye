@@ -38,7 +38,6 @@ class Config:
     
     def image_file(self):
         image_file = self.config.get('General', 'image_file')
-        print __file__
         if os.path.isabs(image_file):
             return image_file
         else:
