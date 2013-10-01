@@ -8,9 +8,12 @@ class Config:
     def __init__(self, config_filename):
         self.config_filename = config_filename
         defaults = {'rest_time' : '10', 'work_time' : '50', 
-                'image_file' : 'rei.jpg', 'time_unit' : 'min'}
+                'image_file' : 'rei.jpg', 'time_unit' : 'min',
+                'role' : 'server', 'port' : '88888'}
         self.config = ConfigParser.ConfigParser(defaults)
-        self.config.add_section('General') 
+        self.config.add_section('General')
+        self.config.add_section('Server')
+        self.config.add_section('Client') 
         try:
             self.config.read(self.config_filename)
         except:
@@ -64,6 +67,23 @@ class Config:
             self.config.read(self.config_filename)
         except :
             pass
+        
+    def role(self):
+        role = self.config.get('General', 'role')
+        if role == 'server':
+            return network.SERVER_ROLE
+        elif role == 'client':
+            return network.CLIENT_ROLE
+        else:
+            print "Unknow role"
+            
+    def port(self):
+        if self.role() == network.SERVER_ROLE:
+            return self.config.getint('Server', 'port')
+        elif self.role() == network.CLIENT_ROLE:
+            return self.config.getint('Client', 'port')
+        else:
+            print "Impossible here"
 
 if __name__ == "__main__":
     config = Config("eye.ini")
