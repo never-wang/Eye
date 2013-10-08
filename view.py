@@ -9,6 +9,7 @@ import ctypes
 import config
 import eye
 import tray
+import state
 
 class View():
     def __init__(self, eye):
@@ -23,7 +24,8 @@ class WindowsView(wx.Frame):
         monitor_height = ctypes.windll.user32.GetSystemMetrics(1)
 
         self.app = wx.App(False)
-        self.eye = eye
+        self.state = eye.state
+        self.config = eye.config
         
         wx.Frame.__init__(self, None, size = (monitor_width, monitor_height))
         self.Bind(wx.EVT_ERASE_BACKGROUND, self.erase_background)
@@ -64,7 +66,7 @@ class WindowsView(wx.Frame):
         dc.Clear()
         
         width, height = self.GetSize()
-        image = wx.Image(self.eye.config.image_file(), type = wx.BITMAP_TYPE_ANY)
+        image = wx.Image(self.config.image_file(), type = wx.BITMAP_TYPE_ANY)
         image_width, image_height = image.GetSize()
         '''resize image'''
         ratio = max(1.0 * width / image_width, 1.0 * height / image_height)
@@ -74,14 +76,14 @@ class WindowsView(wx.Frame):
         dc.DrawBitmap(bitmap, 0, 0)
         
     def set_view(self):
-        print self.eye.state
-        if self.eye.state == eye.WAIT_WORK_STATE:
+        cur_state = self.state.state()
+        if cur_state == state.WAIT_WORK_STATE:
             self.work.Show(True)
             self.Show(True)
-        elif self.eye.state == eye.WORK_STATE:
+        elif cur_state == state.WORK_STATE:
             self.work.Show(False)
             self.Show(False)
-        elif self.eye.state == eye.REST_STATE:
+        elif cur_state == state.REST_STATE:
             self.Show(True) 
             self.work.Show(False)
         else:
@@ -91,19 +93,19 @@ class WindowsView(wx.Frame):
         
             
     def start_work(self, event):
-        self.eye.set_state(eye.WORK_STATE)
+        self.state.set_state(state.WORK_STATE)
         self.set_view()
     
     def start_rest(self, event):
-        self.eye.set_state(eye.REST_STATE)
+        self.state.set_state(state.REST_STATE)
         self.set_view()
         
     def set_time(self):
-        self.time.SetLabel(self.eye.time())
+        self.time.SetLabel(self.state.time())
         self.Layout()
         
     def update_view(self, event): 
-        is_state_changed = self.eye.update_state()
+        is_state_changed = self.state.update_state()
         
         if is_state_changed == True:
             self.set_view()

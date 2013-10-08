@@ -47,7 +47,7 @@ class WindowsTray():
         self.config_frame.SetSizer(box)
 
         self.config_text = wx.TextCtrl(self.config_frame, style = wx.TE_MULTILINE)
-        text = self.view.eye.config.text()
+        text = self.view.config.text()
         if text != None:
             self.config_text.WriteText(text)
         box.Add(self.config_text, 1, wx.EXPAND | wx.ALL, 0)
@@ -74,7 +74,7 @@ class WindowsTray():
         
     def config_accept(self, event):
         text = self.config_text.GetValue()
-        self.view.eye.config.set_text(text)
+        self.view.config.set_text(text)
         self.config_frame.Close()
         del self.config_frame
         del self.config_text

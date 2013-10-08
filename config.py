@@ -3,13 +3,14 @@
 import ConfigParser
 import datetime
 import os
+import state
 
 class Config:
     def __init__(self, config_filename):
         self.config_filename = config_filename
         defaults = {'rest_time' : '10', 'work_time' : '50', 
                 'image_file' : 'rei.jpg', 'time_unit' : 'min',
-                'role' : 'server', 'port' : '88888'}
+                'role' : 'server', 'port' : '8888', 'server_addr'}
         self.config = ConfigParser.ConfigParser(defaults)
         self.config.add_section('General')
         self.config.add_section('Server')
@@ -71,16 +72,16 @@ class Config:
     def role(self):
         role = self.config.get('General', 'role')
         if role == 'server':
-            return network.SERVER_ROLE
+            return state.SERVER_ROLE
         elif role == 'client':
-            return network.CLIENT_ROLE
+            return state.CLIENT_ROLE
         else:
             print "Unknow role"
             
     def port(self):
-        if self.role() == network.SERVER_ROLE:
+        if self.role() == state.SERVER_ROLE:
             return self.config.getint('Server', 'port')
-        elif self.role() == network.CLIENT_ROLE:
+        elif self.role() == state.CLIENT_ROLE:
             return self.config.getint('Client', 'port')
         else:
             print "Impossible here"
