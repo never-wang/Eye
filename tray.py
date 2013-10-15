@@ -10,7 +10,10 @@ try:
     import appindicator
 except ImportError:
     pass
-import wx
+try:
+    import wx
+except ImportError:
+    pass
 import os
 
 class WindowsTray():

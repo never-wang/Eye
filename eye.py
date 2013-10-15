@@ -27,7 +27,7 @@ class Eye():
         if platform.system() == 'Windows':
             self.view = view.WindowsView(self)
         elif platform.system() == 'Linux':
-            pass
+            self.view = view.LinuxView(self)
         else :
             exit
         

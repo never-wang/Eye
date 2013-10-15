@@ -10,7 +10,8 @@ class Config:
         self.config_filename = config_filename
         defaults = {'rest_time' : '10', 'work_time' : '50', 
                 'image_file' : 'rei.jpg', 'time_unit' : 'min',
-                'role' : 'server', 'port' : '8888', 'server_addr'}
+                'role' : 'server', 'port' : '8888', 
+                'server_addr' : 'never.local'}
         self.config = ConfigParser.ConfigParser(defaults)
         self.config.add_section('General')
         self.config.add_section('Server')
