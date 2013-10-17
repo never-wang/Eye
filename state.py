@@ -24,7 +24,7 @@ class State():
     def update_state(self):
         cur_time = datetime.datetime.now()
         time_delta = cur_time - self.start_time 
-        print time_delta, self.cur_state, self.config.work_time()
+        print time_delta, self.cur_state
         
         if self.cur_state == REST_STATE:
             if time_delta > self.config.rest_time() :

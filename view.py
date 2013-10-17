@@ -18,10 +18,18 @@ import tray
 import state
 
 class View():
-    def __init__(self, eye):
+    work_text = 'Start Work !'
+    time_font_size = 25
+    work_font_size = 30
+    standard_width = 1024
+
+    def __init__(self, eye, monitor_width): 
         self.config = eye.config
         self.state = eye.state
-            
+        
+        self.work_font_size = self.work_font_size * monitor_width / self.standard_width
+        self.time_font_size = self.time_font_size * monitor_width / self.standard_width
+
     def start_work(self, event):
         self.state.set_state(state.WORK_STATE)
         self.set_view()
@@ -30,7 +38,7 @@ class View():
         self.state.set_state(state.REST_STATE)
         self.set_view()
         
-    def update_view(self, event): 
+    def update_view(self, event = None): 
         is_state_changed = self.state.update_state()
         
         if is_state_changed == True:
@@ -38,33 +46,41 @@ class View():
         
         self.set_time()
 
+        return True
+
 class WindowsView(View):
     '''the WindwsView is implemented by wxpython'''
     
     def __init__(self, eye):
-        View.__init__(self, eye)
-        
         monitor_width = ctypes.windll.user32.GetSystemMetrics(0)
         monitor_height = ctypes.windll.user32.GetSystemMetrics(1)
+        
+        View.__init__(self, eye, monitor_width)
 
         self.app = wx.App(False)
         
-        self.frame = wx.Frame(None, size = (monitor_width, monitor_height))
-        self.frame.Bind(wx.EVT_ERASE_BACKGROUND, self.erase_background)
+        self.frame = wx.Frame(None, 
+                size = (monitor_width, monitor_height))
+        self.frame.Bind(wx.EVT_ERASE_BACKGROUND, 
+                self.erase_background)
         self.frame.ShowFullScreen(True)
         
         box = wx.BoxSizer(wx.VERTICAL)
         self.frame.SetSizer(box)
         
         self.time = wx.StaticText(self.frame)
-        font = wx.Font(30, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
+        font = wx.Font(self.time_font_size, wx.FONTFAMILY_DEFAULT, 
+                wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
         self.time.SetFont(font)
-        self.time.SetBackgroundColour(wx.ColourDatabase().Find("WHITE"))
+        self.time.SetBackgroundColour(
+                wx.ColourDatabase().Find("WHITE"))
         time_width, time_height = self.time.GetSize()
         time_border = 20
         box.Add(self.time, 0, wx.TOP | wx.CENTER, 20)
         
-        self.work = wx.Button(self.frame, label = "Start Work !")
+        self.work = wx.Button(self.frame, label = self.work_text)
+        font = wx.Font(self.work_font_size, wx.FONTFAMILY_DEFAULT, 
+                wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_NORMAL)
         self.work.SetFont(font)
         button_width, button_height = self.work.GetSize() 
         box.Add(self.work, 0, wx. wx.TOP | wx.CENTRE , 
@@ -75,10 +91,10 @@ class WindowsView(View):
         self.Bind(wx.EVT_TIMER, self.update_view)
         self.timer.Start(milliseconds = 1000)
         
-        self.tray = tray.WindowsTray(self)     
-        
         self.set_view()
         self.set_time()
+        
+        self.tray = tray.WindowsTray(self)     
 
     def run(self):
         self.app.MainLoop()
@@ -117,59 +133,18 @@ class WindowsView(View):
         self.set_time()
         self.Layout()
 
-    def window_config(self):
-        '''user config the Eye by a window, the config will be stored in config file too'''
-        self.config_frame = wx.Frame(None, size = (300, 300), title = '设置',
-                                     style = wx.DEFAULT_FRAME_STYLE & (~ wx.RESIZE_BORDER) & (~ wx.MAXIMIZE_BOX))
-        self.config_frame.SetBackgroundColour(wx.ColourDatabase().Find("WHITE"))
-        self.config_frame.Centre()
-        self.config_frame.Show()
-        frame_width, frame_height = self.config_frame.GetSize()
-        
-        box = wx.BoxSizer(wx.VERTICAL)
-        self.config_frame.SetSizer(box)
-
-        self.config_text = wx.TextCtrl(self.config_frame, style = wx.TE_MULTILINE)
-        text = self.config.text()
-        if text != None:
-            self.config_text.WriteText(text)
-        box.Add(self.config_text, 1, wx.EXPAND | wx.ALL, 0)
-        
-        button_box = wx.BoxSizer(wx.HORIZONTAL)
-        box.Add(button_box, 0)
-
-        accept_button = wx.Button(self.config_frame, label = '确定')
-        accept_button_width, accept_button_height = accept_button.GetSize()
-        accept_button.Bind(wx.EVT_BUTTON, self.config_accept)
-        button_box.Add(accept_button, 0, wx.LEFT, frame_width / 2 - accept_button_width - 5)
-        cancel_button = wx.Button(self.config_frame, label = '取消')
-        cancel_button_width, cancel_button_height = accept_button.GetSize()
-        cancel_button.Bind(wx.EVT_BUTTON, self.config_cancel)
-        button_box.Add(cancel_button, 0, wx.RIGHT, frame_width / 2 - cancel_button_width - 5)
-        self.config_frame.Layout()
-
-    def config_accept(self, event):
-        text = self.config_text.GetValue()
-        self.config.set_text(text)
-        self.config_frame.Close()
-        del self.config_frame
-        del self.config_text
-
-    def config_cancel(self, event):
-        self.config_frame.Close()
-        del self.config_frame
-        del self.config_text
-
 class LinuxView(View):
     '''the WindwsView is implemented by wxpython'''
     
     def __init__(self, eye):
-        View.__init__(self, eye)
-        
         monitor_width = gtk.gdk.screen_width()
         monitor_height = gtk.gdk.screen_height()
 
+        View.__init__(self, eye, monitor_width)
+        
         self.window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+        self.window.set_decorated(False)
+        self.window.set_resizable(True)
         self.window.fullscreen()
         self.window.connect("destroy", gtk.main_quit)
         self.window.show()
@@ -191,26 +166,32 @@ class LinuxView(View):
         self.image.show()
 
         self.time = gtk.Label()
+        #set time here so that the size_request can get perfect size
+        self.set_time() 
         width, height = self.time.size_request()
         self.fixed.put(self.time, monitor_width / 2 - width / 2, 10)
         self.time.show()
         
-        self.work = gtk.Button(label="Start Work !")
+        self.work = gtk.Button("")
+        label = self.work.get_child()
+        label.set_markup('<span size="48000">' + self.work_text + '</span>')
         self.work.connect('clicked', self.start_work)
         width, height = self.work.size_request()
         self.fixed.put(self.work, monitor_width / 2 - 
                 width / 2, monitor_height / 2 - height / 2)
         self.work.show()
        
-        self.set_time()
-        gobject.timeout_add(1000, self.set_time)
+        gobject.timeout_add(1000, self.update_view)
+        
+        self.tray = tray.LinuxTray(self)     
 
     def run(self):
         gtk.main()
     
     def set_time(self):
         self.time.set_markup(
-                '<span background="white" size="38000">' + 
+                '<span background="white" size="' + 
+                str(self.time_font_size * 1000) + '">' + 
                 self.state.time() + '</span>')
    
     def set_view(self):
@@ -227,46 +208,3 @@ class LinuxView(View):
         else:
             print 'Unkown Eye State'
         self.set_time()
-
-    def window_config(self):
-        '''user config the Eye by a window, the config will be stored in config file too'''
-        self.config_frame = wx.Frame(None, size = (300, 300), title = '设置',
-                                     style = wx.DEFAULT_FRAME_STYLE & (~ wx.RESIZE_BORDER) & (~ wx.MAXIMIZE_BOX))
-        self.config_frame.SetBackgroundColour(wx.ColourDatabase().Find("WHITE"))
-        self.config_frame.Centre()
-        self.config_frame.Show()
-        frame_width, frame_height = self.config_frame.GetSize()
-        
-        box = wx.BoxSizer(wx.VERTICAL)
-        self.config_frame.SetSizer(box)
-
-        self.config_text = wx.TextCtrl(self.config_frame, style = wx.TE_MULTILINE)
-        text = self.config.text()
-        if text != None:
-            self.config_text.WriteText(text)
-        box.Add(self.config_text, 1, wx.EXPAND | wx.ALL, 0)
-        
-        button_box = wx.BoxSizer(wx.HORIZONTAL)
-        box.Add(button_box, 0)
-
-        accept_button = wx.Button(self.config_frame, label = '确定')
-        accept_button_width, accept_button_height = accept_button.GetSize()
-        accept_button.Bind(wx.EVT_BUTTON, self.config_accept)
-        button_box.Add(accept_button, 0, wx.LEFT, frame_width / 2 - accept_button_width - 5)
-        cancel_button = wx.Button(self.config_frame, label = '取消')
-        cancel_button_width, cancel_button_height = accept_button.GetSize()
-        cancel_button.Bind(wx.EVT_BUTTON, self.config_cancel)
-        button_box.Add(cancel_button, 0, wx.RIGHT, frame_width / 2 - cancel_button_width - 5)
-        self.config_frame.Layout()
-
-    def config_accept(self, event):
-        text = self.config_text.GetValue()
-        self.config.set_text(text)
-        self.config_frame.Close()
-        del self.config_frame
-        del self.config_text
-
-    def config_cancel(self, event):
-        self.config_frame.Close()
-        del self.config_frame
-        del self.config_text
