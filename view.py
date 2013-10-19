@@ -38,6 +38,10 @@ class View():
     def start_rest(self, event):
         self.state.set_state(state.REST_STATE)
         self.set_view()
+        
+    def run(self):
+        self.set_view()
+        self.set_time()
 
 class WindowsView(View):
     '''the WindwsView is implemented by wxpython'''
@@ -81,13 +85,14 @@ class WindowsView(View):
         self.tray = tray.WindowsTray(self)     
 
     def run(self):
+        View.run(self)
         self.app.MainLoop()
         
     def erase_background(self, event):
         dc = event.GetDC()
         dc.Clear()
         
-        width, height = self.GetSize()
+        width, height = self.frame.GetSize()
         image = wx.Image(self.config.image_file(), type = wx.BITMAP_TYPE_ANY)
         image_width, image_height = image.GetSize()
         '''resize image'''
@@ -98,24 +103,25 @@ class WindowsView(View):
         dc.DrawBitmap(bitmap, 0, 0)
     
     def set_time(self):
-        self.time.SetLabel(self.state.time())
-        self.Layout()
+        self.time.SetLabel(self.state.get_time())
+        self.frame.Layout()
         
     def set_view(self):
-        cur_state = self.state.state()
+        cur_state = self.state.get_state()
+        
         if cur_state == state.WAIT_WORK_STATE:
             self.work.Show(True)
-            self.Show(True)
+            self.frame.Show(True)
         elif cur_state == state.WORK_STATE:
             self.work.Show(False)
-            self.Show(False)
+            self.frame.Show(False)
         elif cur_state == state.REST_STATE:
-            self.Show(True) 
             self.work.Show(False)
+            self.frame.Show(True) 
         else:
             print 'Unkown Eye State'
         self.set_time()
-        self.Layout()
+        self.frame.Layout()
 
 class LinuxView(View):
     '''the WindwsView is implemented by wxpython'''
@@ -168,6 +174,7 @@ class LinuxView(View):
         self.tray = tray.LinuxTray(self)     
 
     def run(self):
+        View.run(self)
         gobject.threads_init()
         gtk.main()
     
