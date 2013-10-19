@@ -7,7 +7,7 @@ import state
 
 class Config:
     def __init__(self, config_filename):
-        self.config_filename = config_filename
+        self.config_filename = os.path.os.path.join(os.path.dirname(__file__), config_filename)
         defaults = {'rest_time' : '10', 'work_time' : '50', 
                 'image_file' : 'rei.jpg', 'time_unit' : 'min',
                 'role' : 'server', 'port' : '8888', 
