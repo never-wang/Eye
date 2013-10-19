@@ -2,8 +2,6 @@
 '''
 Created on 2013.8.19
 
-import view
-import platform    
 @author: nEver
 '''
 from config import *

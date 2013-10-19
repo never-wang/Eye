@@ -158,6 +158,11 @@ class LinuxTray(Tray):
                 text_buffer.get_end_iter())
         self.view.config.set_text(text)
         self.config_window.hide_all()
+        dialog = gtk.MessageDialog(None, 0, gtk.MESSAGE_INFO, 
+                buttons = gtk.BUTTONS_OK,
+                message_format = CONFIG_ACCEPT_MSG)
+        dialog.run()
+        dialog.destroy()
         del self.config_window
         del self.text_view
 

@@ -44,6 +44,10 @@ class State():
                 self.set_state(REST_STATE)
                 self.view.set_view()
         self.view.set_time()
+            
+        self.condition.acquire()
+        self.condition.notify()
+        self.condition.release()
         
         self.timer = threading.Timer(1, self.update_state)
         self.timer.start()
@@ -69,25 +73,26 @@ class State():
         self.start_time = datetime.datetime.now()
         
 class StateServer(SocketServer.TCPServer):
-    def __init(self, addr, handler, state):
+    def __init__(self, addr, handler, state):
         SocketServer.TCPServer.__init__(self, addr, handler)
         self.state = state
         
 class ServerHandler(SocketServer.BaseRequestHandler):
     def handle(self):
-        state = self.server.state.state()
-        time = self.server.state.time()
+        state = self.server.state
         condition = self.server.state.condition
        
         while True:
-            coniditon.wait()
-            self.request.send(state)
-            self.request.send(time)
+            condition.acquire()
+            condition.wait()
+            condition.release()
+            self.request.send(state.get_state())
+            self.request.send(state.get_time())
         
 class ServerState(State):
     def __init__(self, eye):
         State.__init__(self, eye)
-        self.conditon = threading.Condition()
+        self.condition = threading.Condition()
         thread.start_new_thread(self.start_server, ())
         self.shadow = False
        # self.start_server()
@@ -113,6 +118,7 @@ class ClientState(State):
             self.shadow = True
             self.time = INIT_TIME
         except:
+            print "Can't connect with server"
             self.socket = None
             self.shadow = False
     
@@ -142,5 +148,5 @@ class ClientState(State):
         if self.shadow:
             return self.time
         else:
-            return State.get_time()
+            return State.get_time(self)
         

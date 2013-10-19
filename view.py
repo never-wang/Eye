@@ -182,10 +182,10 @@ class LinuxView(View):
         self.time.set_markup(
                 '<span background="white" size="' + 
                 str(self.time_font_size * 1000) + '">' + 
-                self.state.time() + '</span>')
+                self.state.get_time() + '</span>')
    
     def set_view(self):
-        cur_state = self.state.state()
+        cur_state = self.state.get_state()
         if cur_state == state.WAIT_WORK_STATE:
             self.work.show()
             self.window.show_all()
@@ -196,5 +196,5 @@ class LinuxView(View):
             self.window.show_all()
             self.work.hide()
         else:
-            print 'Unkown Eye State'
+            print 'Unkown Eye State :', cur_state
         self.set_time()
