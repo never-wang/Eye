@@ -13,6 +13,8 @@ elif platform.system() == 'Linux':
     import appindicator
 import os
 
+CONFIG_ACCEPT_MSG = "设置修改后需要重新启动程序后方能生效"
+
 class Tray():
     config_window_width = 300
     config_window_height = 300
@@ -78,7 +80,7 @@ class WindowsTray(Tray):
         self.config_frame.Layout()       
 
     def menu_quit(self, event):
-        self.view.Close()
+        self.view.frame.Close()
         self.tray.Destroy()
         self.state.quit()
     
@@ -86,6 +88,10 @@ class WindowsTray(Tray):
         text = self.config_text.GetValue()
         self.view.config.set_text(text)
         self.config_frame.Close()
+        
+        dialog = wx.MessageDialog(None, CONFIG_ACCEPT_MSG, style=wx.OK|wx.CENTRE)
+        dialog.ShowModal()
+        
         del self.config_frame
         del self.config_text
 
