@@ -18,6 +18,7 @@ class Tray():
     config_window_height = 300
     def __init__(self, view):
         self.view = view
+        self.state = view.state
         self.itemlist = [(1, "设置", self.menu_config),
                          (2, '休息', self.menu_rest),
                          (3, '退出', self.menu_quit)]
@@ -79,6 +80,7 @@ class WindowsTray(Tray):
     def menu_quit(self, event):
         self.view.Close()
         self.tray.Destroy()
+        self.state.quit()
     
     def config_accept(self, event):
         text = self.config_text.GetValue()
@@ -161,4 +163,5 @@ class LinuxTray(Tray):
 
     def menu_quit(self, event):
         gtk.main_quit()
+        self.state.quit()
         

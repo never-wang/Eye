@@ -31,6 +31,8 @@ class Eye():
         else :
             exit
         
+        self.view.state = self.state
+        self.state.update_state()
         self.view.run()
 
 if __name__ == '__main__':

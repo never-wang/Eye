@@ -26,6 +26,7 @@ class View():
     def __init__(self, eye, monitor_width): 
         self.config = eye.config
         self.state = eye.state
+        self.state.view = self
         
         self.work_font_size = self.work_font_size * monitor_width / self.standard_width
         self.time_font_size = self.time_font_size * monitor_width / self.standard_width
@@ -37,16 +38,6 @@ class View():
     def start_rest(self, event):
         self.state.set_state(state.REST_STATE)
         self.set_view()
-        
-    def update_view(self, event = None): 
-        is_state_changed = self.state.update_state()
-        
-        if is_state_changed == True:
-            self.set_view()
-        
-        self.set_time()
-
-        return True
 
 class WindowsView(View):
     '''the WindwsView is implemented by wxpython'''
@@ -86,13 +77,6 @@ class WindowsView(View):
         box.Add(self.work, 0, wx. wx.TOP | wx.CENTRE , 
                 monitor_height / 2 - button_height / 2 - time_height - time_border)
         self.work.Bind(wx.EVT_BUTTON, self.start_work)
-        
-        self.timer = wx.Timer(self.frame)
-        self.Bind(wx.EVT_TIMER, self.update_view)
-        self.timer.Start(milliseconds = 1000)
-        
-        self.set_view()
-        self.set_time()
         
         self.tray = tray.WindowsTray(self)     
 
@@ -166,8 +150,8 @@ class LinuxView(View):
         self.image.show()
 
         self.time = gtk.Label()
+        self.set_time()
         #set time here so that the size_request can get perfect size
-        self.set_time() 
         width, height = self.time.size_request()
         self.fixed.put(self.time, monitor_width / 2 - width / 2, 10)
         self.time.show()
@@ -181,11 +165,10 @@ class LinuxView(View):
                 width / 2, monitor_height / 2 - height / 2)
         self.work.show()
        
-        gobject.timeout_add(1000, self.update_view)
-        
         self.tray = tray.LinuxTray(self)     
 
     def run(self):
+        gobject.threads_init()
         gtk.main()
     
     def set_time(self):

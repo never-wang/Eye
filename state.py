@@ -7,6 +7,7 @@ Created on 2013年10月1日
 import thread
 import datetime
 import SocketServer
+import threading
 
 SERVER_ROLE = 'SERVER'
 CLIENT_ROLE = 'CLIENT'
@@ -14,6 +15,9 @@ CLIENT_ROLE = 'CLIENT'
 WORK_STATE = 'WORK'
 REST_STATE = "REST"
 WAIT_WORK_STATE = 'WAIT_WORK'
+
+TIME_IDENT = 'TIME'
+STATE_IDENT = 'STATE'
 
 class State():
     def __init__(self, eye):
@@ -29,12 +33,21 @@ class State():
         if self.cur_state == REST_STATE:
             if time_delta > self.config.rest_time() :
                 self.set_state(WAIT_WORK_STATE)
-                return True
+                self.view.set_view()
         elif self.cur_state == WORK_STATE:
             if time_delta > self.config.work_time() : 
                 self.set_state(REST_STATE)
-                return True
-        return False
+                self.view.set_view()
+        self.view.set_time()
+
+        self.condition.notify()
+        
+        self.timer = threading.Timer(1, self.update_state)
+        self.timer.start()
+
+    def quit(self):
+        if self.timer:
+            self.timer.cancel()
         
 class StateServer(SocketServer.TCPServer):
     def __init(self, addr, handler, state):
@@ -45,16 +58,22 @@ class ServerHandler(SocketServer.BaseRequestHandler):
     def handle(self):
         state = self.server.state.state()
         time = self.server.state.time()
+        condition = self.server.state.condition
+       
+        whiel True:
+            coniditon.wait()
+            self.request.send(state)
+            self.request.send(time)
         
-        self.request.sendall(pickle.dumps((pick, time)))
-
 class ServerState(State):
     def __init__(self, eye):
         State.__init__(self, eye)
+        self.conditon = threading.Condition()
         thread.start_new_thread(self.start_server, ())
+       # self.start_server()
         
     def start_server(self):
-        server = StateServer(("localhost", self.config.port()), ServerHandler, self)
+        server = StateServer(("", self.config.port()), ServerHandler, self)
         server.serve_forever()
     
     def state(self):
