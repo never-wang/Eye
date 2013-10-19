@@ -11,7 +11,7 @@ class Config:
         defaults = {'rest_time' : '10', 'work_time' : '50', 
                 'image_file' : 'rei.jpg', 'time_unit' : 'min',
                 'role' : 'server', 'port' : '8888', 
-                'server_addr' : 'never.local'}
+                'server' : 'never.local', 'timeout' : '5'}
         self.config = ConfigParser.ConfigParser(defaults)
         self.config.add_section('General')
         self.config.add_section('Server')
@@ -84,6 +84,18 @@ class Config:
             return self.config.getint('Server', 'port')
         elif self.role() == state.CLIENT_ROLE:
             return self.config.getint('Client', 'port')
+        else:
+            print "Impossible here"
+            
+    def server_address(self):
+        if self.role() == state.CLIENT_ROLE:
+            return (self.config.get('Client', 'server'), self.port())
+        else:
+            print "Impossible here"
+            
+    def timeout(self):
+        if self.role() == state.CLIENT_ROLE:
+            return self.config.getint('Client', 'timeout')
         else:
             print "Impossible here"
 
