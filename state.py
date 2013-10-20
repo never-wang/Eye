@@ -72,6 +72,9 @@ class State():
         self.cur_state = state
         self.start_time = datetime.datetime.now()
         
+    def get_status(self):
+        return self.cur_state + " : " + self.get_time()
+        
 class StateServer(SocketServer.TCPServer):
     def __init__(self, addr, handler, state):
         SocketServer.TCPServer.__init__(self, addr, handler)

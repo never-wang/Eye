@@ -21,9 +21,10 @@ class Tray():
     def __init__(self, view):
         self.view = view
         self.state = view.state
-        self.itemlist = [(1, "设置", self.menu_config),
+        self.itemlist = [(1, '状态', self.menu_status),
                          (2, '休息', self.menu_rest),
-                         (3, '退出', self.menu_quit)]
+                         (3, "设置", self.menu_config),
+                         (4, '退出', self.menu_quit)]
     
     def menu_rest(self, event):
         self.view.start_rest(event)
@@ -46,6 +47,11 @@ class WindowsTray(Tray):
             item = menu.Append(id, text)
             menu.Bind(wx.EVT_MENU, callback, id = id)
         return menu
+    
+    def menu_status(self, event):
+        status = self.state.get_status()
+        dialog = wx.Frame(None)
+        dialog.Show()
     
     def menu_config(self, event):
         '''user config the Eye by a window, the config will be stored in config file too'''
