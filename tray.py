@@ -51,7 +51,7 @@ class WindowsTray(Tray):
     def menu_status(self, event):
         status = self.state.get_status()
         dialog = wx.MessageDialog(None, status, style=wx.OK|wx.CENTRE)
-        dialog.Show()
+        dialog.ShowModal()
     
     def menu_config(self, event):
         '''user config the Eye by a window, the config will be stored in config file too'''
