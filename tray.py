@@ -50,7 +50,7 @@ class WindowsTray(Tray):
     
     def menu_status(self, event):
         status = self.state.get_status()
-        dialog = wx.Frame(None)
+        dialog = wx.MessageDialog(None, status, style=wx.OK|wx.CENTRE)
         dialog.Show()
     
     def menu_config(self, event):
@@ -125,6 +125,14 @@ class LinuxTray(Tray):
             menu.append(item)
         menu.show()
         return menu
+    
+    def menu_status(self, event):
+        status = self.state.get_status()
+        dialog = gtk.MessageDialog(None, 0, gtk.MESSAGE_INFO, 
+                buttons = gtk.BUTTONS_OK,
+                message_format = status)
+        dialog.run()
+        dialog.destroy()
     
     def menu_config(self, event):
         '''user config the Eye by a window, the config will be stored in config file too'''
