@@ -1,9 +1,4 @@
-# -�~- coding: utf-8 -�~-
-'''
-Created on 2013.8.19
-
-@author: nEver
-'''
+#!/usr/bin/env python
 from config import *
 import state
 import platform
@@ -13,6 +8,7 @@ CONFIG_FILENAME = 'config.ini'
 
 class Eye():
     def __init__(self):
+        print "fuck"
         self.config = Config(CONFIG_FILENAME)
         
         if self.config.role() == state.SERVER_ROLE:
